@@ -1,0 +1,3 @@
+env: static
+buildCommand: npm install && npm run build
+publishPath: dist
