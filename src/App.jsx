@@ -139,7 +139,7 @@ function App() {
       status: 'new',
       priority: 'high',
       caseType: 'Member Assist',
-      deadline: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+      deadline: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString()
     };
 
     setCases([member, ...cases]);
@@ -733,7 +733,7 @@ Unite in Health`;
                 createdDate: new Date().toISOString(),
                 status: 'new',
                 priority: 'high',
-                deadline: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+                deadline: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString()
               };
               setCases([newCase, ...cases]);
               setShowModal(false);
