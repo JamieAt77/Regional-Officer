@@ -65,6 +65,9 @@ function App() {
   const [selectedCase, setSelectedCase] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState('');
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [emailContent, setEmailContent] = useState('');
+  const [parsedData, setParsedData] = useState(null);
 
   // Load data from localStorage on mount
   useEffect(() => {
@@ -103,6 +106,83 @@ function App() {
   useEffect(() => {
     localStorage.setItem('ro_updates', JSON.stringify(teamUpdates));
   }, [teamUpdates]);
+
+  // Email parsing function
+  const parseMemberAssistEmail = (emailContent) => {
+    const extractedData = {
+      memberNumber: '',
+      memberName: '',
+      joinDate: '',
+      employer: '',
+      workplace: '',
+      address: '',
+      postCode: '',
+      jobTitle: '',
+      email: '',
+      telephone: '',
+      takenDate: '',
+      issue: '',
+      caseReference: ''
+    };
+
+    // Extract case reference
+    const refMatch = emailContent.match(/reference:\s*(\d+)/i);
+    if (refMatch) extractedData.caseReference = refMatch[1];
+
+    // Extract member number and name
+    const memberMatch = emailContent.match(/Member:\s*(\d+)\s*-\s*([^\n]+)/i);
+    if (memberMatch) {
+      extractedData.memberNumber = memberMatch[1].trim();
+      extractedData.memberName = memberMatch[2].trim();
+    }
+
+    // Extract join date
+    const joinMatch = emailContent.match(/Join date:\s*([^\n]+)/i);
+    if (joinMatch) extractedData.joinDate = joinMatch[1].trim();
+
+    // Extract employer name
+    const employerMatch = emailContent.match(/Employer Name:\s*([^\n]+)/i);
+    if (employerMatch) extractedData.employer = employerMatch[1].trim();
+
+    // Extract workplace name
+    const workplaceMatch = emailContent.match(/Workplace Name:\s*([^\n]+)/i);
+    if (workplaceMatch) extractedData.workplace = workplaceMatch[1].trim();
+
+    // Extract workplace address
+    const addressMatch = emailContent.match(/Workplace Address:\s*([\s\S]*?)(?=Post Code|Recognised|Job Title)/i);
+    if (addressMatch) extractedData.address = addressMatch[1].trim();
+
+    // Extract post code
+    const postCodeMatch = emailContent.match(/Post Code:\s*([^\n]+)/i);
+    if (postCodeMatch) extractedData.postCode = postCodeMatch[1].trim();
+
+    // Extract job title
+    const jobMatch = emailContent.match(/Job Title:\s*([^\n]+)/i);
+    if (jobMatch) extractedData.jobTitle = jobMatch[1].trim();
+
+    // Extract email
+    const emailMatch = emailContent.match(/Email Addresses:\s*([^\n]+)/i);
+    if (emailMatch) extractedData.email = emailMatch[1].trim();
+
+    // Extract telephone
+    const phoneMatch = emailContent.match(/Telephone:\s*([^\n]+)/i);
+    if (phoneMatch) extractedData.telephone = phoneMatch[1].trim();
+
+    // Extract taken date
+    const takenMatch = emailContent.match(/Taken Date:\s*([^\n]+)/i);
+    if (takenMatch) extractedData.takenDate = takenMatch[1].trim();
+
+    // Extract issue details
+    const issueMatch = emailContent.match(/Issue Details:\s*([\s\S]*?)(?:\[|\*$)/i);
+    if (issueMatch) {
+      extractedData.issue = issueMatch[1].trim();
+    } else {
+      const altIssueMatch = emailContent.match(/Issue Details:\s*([\s\S]+)/i);
+      if (altIssueMatch) extractedData.issue = altIssueMatch[1].trim();
+    }
+
+    return extractedData;
+  };
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -145,6 +225,52 @@ function App() {
     setCases([member, ...cases]);
     setShowModal(false);
     alert('Member assist case created successfully!');
+  };
+
+  const handleOpenEmailModal = () => {
+    setShowEmailModal(true);
+    setEmailContent('');
+    setParsedData(null);
+  };
+
+  const handleCloseEmailModal = () => {
+    setShowEmailModal(false);
+    setEmailContent('');
+    setParsedData(null);
+  };
+
+  const handleParseEmail = () => {
+    const data = parseMemberAssistEmail(emailContent);
+    setParsedData(data);
+  };
+
+  const handleCreateFromParsedEmail = () => {
+    if (!parsedData) return;
+
+    const newCase = {
+      id: Date.now(),
+      caseReference: parsedData.caseReference || '',
+      memberNumber: parsedData.memberNumber,
+      memberName: parsedData.memberName,
+      joinDate: parsedData.joinDate,
+      employer: parsedData.employer,
+      workplace: parsedData.workplace,
+      address: parsedData.address,
+      postcode: parsedData.postCode,
+      jobTitle: parsedData.jobTitle,
+      email: parsedData.email,
+      phone: parsedData.telephone,
+      issue: parsedData.issue,
+      createdDate: new Date().toISOString(),
+      status: 'new',
+      priority: 'high',
+      caseType: 'Member Assist',
+      deadline: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString()
+    };
+
+    setCases([newCase, ...cases]);
+    handleCloseEmailModal();
+    alert('Member assist case created successfully from email!');
   };
 
   const generateLegalRunForm = (caseItem) => {
@@ -465,6 +591,12 @@ Unite in Health`;
               }}
             >
               <Plus /> Add Member Assist
+            </button>
+            <button 
+              className="btn-secondary"
+              onClick={handleOpenEmailModal}
+            >
+              <Mail /> Paste Email
             </button>
           </div>
         )}
@@ -1056,6 +1188,102 @@ Unite in Health`;
 
       {/* Modal */}
       <Modal />
+
+      {/* Email Parsing Modal */}
+      {showEmailModal && (
+        <div className="modal-overlay" onClick={handleCloseEmailModal}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Paste Member Assist Email</h2>
+              <button className="close-btn" onClick={handleCloseEmailModal}>
+                <X />
+              </button>
+            </div>
+            <div className="modal-body">
+              <div className="form-group">
+                <label>Paste the email content below:</label>
+                <textarea
+                  value={emailContent}
+                  onChange={(e) => setEmailContent(e.target.value)}
+                  placeholder="Paste the entire email here including headers, member details, and issue description..."
+                  style={{ minHeight: '200px', fontFamily: 'monospace', fontSize: '13px' }}
+                />
+              </div>
+              <div className="form-actions">
+                <button className="btn-secondary" onClick={handleCloseEmailModal}>
+                  Cancel
+                </button>
+                <button 
+                  className="btn-primary" 
+                  onClick={handleParseEmail}
+                  disabled={!emailContent.trim()}
+                >
+                  <Search /> Parse Email
+                </button>
+              </div>
+
+              {/* Parsed Data Preview */}
+              {parsedData && (
+                <div style={{ marginTop: '30px', borderTop: '2px solid #e0e0e0', paddingTop: '20px' }}>
+                  <h3 style={{ margin: '0 0 20px 0', color: '#0066CC', fontSize: '18px' }}>
+                    Parsed Information
+                  </h3>
+                  <div style={{ display: 'grid', gap: '16px', fontSize: '14px' }}>
+                    {parsedData.caseReference && (
+                      <div>
+                        <strong>Case Reference:</strong> {parsedData.caseReference}
+                      </div>
+                    )}
+                    <div>
+                      <strong>Member:</strong> {parsedData.memberNumber} - {parsedData.memberName}
+                    </div>
+                    <div>
+                      <strong>Employer:</strong> {parsedData.employer}
+                    </div>
+                    <div>
+                      <strong>Workplace:</strong> {parsedData.workplace}
+                    </div>
+                    <div>
+                      <strong>Address:</strong> {parsedData.address}
+                    </div>
+                    {parsedData.postCode && (
+                      <div>
+                        <strong>Post Code:</strong> {parsedData.postCode}
+                      </div>
+                    )}
+                    <div>
+                      <strong>Job Title:</strong> {parsedData.jobTitle}
+                    </div>
+                    <div>
+                      <strong>Email:</strong> {parsedData.email}
+                    </div>
+                    <div>
+                      <strong>Telephone:</strong> {parsedData.telephone}
+                    </div>
+                    <div>
+                      <strong>Taken Date:</strong> {parsedData.takenDate}
+                    </div>
+                    <div>
+                      <strong>Issue:</strong>
+                      <p style={{ marginTop: '8px', color: '#666', lineHeight: '1.6' }}>
+                        {parsedData.issue}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="form-actions" style={{ marginTop: '30px' }}>
+                    <button 
+                      className="btn-success" 
+                      onClick={handleCreateFromParsedEmail}
+                    >
+                      <CheckCircle /> Create Case from Email
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
