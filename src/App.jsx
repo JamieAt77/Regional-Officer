@@ -21,6 +21,28 @@ import {
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import { saveAs } from 'file-saver';
+import axios from 'axios';
+
+// API Configuration
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+const api = axios.create({
+  baseURL: API_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Add token to requests
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('ro_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 // Initial data storage
 const INITIAL_HOSPITALS = [
@@ -69,43 +91,35 @@ function App() {
   const [emailContent, setEmailContent] = useState('');
   const [parsedData, setParsedData] = useState(null);
 
-  // Load data from localStorage on mount
+  // Load data from API on mount
   useEffect(() => {
-    const savedAuth = localStorage.getItem('ro_auth');
-    const savedCases = localStorage.getItem('ro_cases');
-    const savedHospitals = localStorage.getItem('ro_hospitals');
-    const savedMeetings = localStorage.getItem('ro_meetings');
-    const savedDocs = localStorage.getItem('ro_documents');
-    const savedUpdates = localStorage.getItem('ro_updates');
-
-    if (savedAuth === 'true') setIsAuthenticated(true);
-    if (savedCases) setCases(JSON.parse(savedCases));
-    if (savedHospitals) setHospitals(JSON.parse(savedHospitals));
-    if (savedMeetings) setMeetings(JSON.parse(savedMeetings));
-    if (savedDocs) setDocuments(JSON.parse(savedDocs));
-    if (savedUpdates) setTeamUpdates(JSON.parse(savedUpdates));
+    const token = localStorage.getItem('ro_token');
+    if (token) {
+      setIsAuthenticated(true);
+      fetchData();
+    }
   }, []);
 
-  // Save data to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem('ro_cases', JSON.stringify(cases));
-  }, [cases]);
+  // Fetch all data from API
+  const fetchData = async () => {
+    try {
+      const [casesRes, hospitalsRes, meetingsRes, documentsRes, updatesRes] = await Promise.all([
+        api.get('/api/cases'),
+        api.get('/api/hospitals'),
+        api.get('/api/meetings'),
+        api.get('/api/documents'),
+        api.get('/api/team-updates')
+      ]);
 
-  useEffect(() => {
-    localStorage.setItem('ro_hospitals', JSON.stringify(hospitals));
-  }, [hospitals]);
-
-  useEffect(() => {
-    localStorage.setItem('ro_meetings', JSON.stringify(meetings));
-  }, [meetings]);
-
-  useEffect(() => {
-    localStorage.setItem('ro_documents', JSON.stringify(documents));
-  }, [documents]);
-
-  useEffect(() => {
-    localStorage.setItem('ro_updates', JSON.stringify(teamUpdates));
-  }, [teamUpdates]);
+      setCases(casesRes.data);
+      setHospitals(hospitalsRes.data);
+      setMeetings(meetingsRes.data);
+      setDocuments(documentsRes.data);
+      setTeamUpdates(updatesRes.data);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
   // Email parsing function
   const parseMemberAssistEmail = (emailContent) => {
@@ -184,21 +198,27 @@ function App() {
     return extractedData;
   };
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    // Simple password check (in production, use proper auth)
     const password = e.target.password.value;
-    if (password === 'nhsro2024') {
+    
+    try {
+      const response = await api.post('/api/login', {
+        username: 'nhsro',
+        password: password
+      });
+
+      localStorage.setItem('ro_token', response.data.token);
       setIsAuthenticated(true);
-      localStorage.setItem('ro_auth', 'true');
-    } else {
+      await fetchData();
+    } catch (error) {
       alert('Invalid password');
     }
   };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
-    localStorage.removeItem('ro_auth');
+    localStorage.removeItem('ro_token');
   };
 
   const parseMemberEmail = (emailText) => {
