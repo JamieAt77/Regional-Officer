@@ -1,37 +1,49 @@
-# Backend Database Implementation Plan
+# Regional Officer & NHS Hub Enhancement Plan
 
-## Phase 1: Backend API Setup
-- [ ] Create backend directory structure
-- [ ] Initialize Node.js/Express project
-- [ ] Set up database connection (PostgreSQL)
-- [ ] Create database schema
-- [ ] Set up environment variables
-
-## Phase 2: API Endpoints
-- [ ] Authentication endpoint (login/logout)
-- [ ] Cases CRUD endpoints (GET, POST, PUT, DELETE)
-- [ ] Hospitals CRUD endpoints
-- [ ] Meetings CRUD endpoints
-- [ ] Documents CRUD endpoints
-- [ ] Team Updates CRUD endpoints
-
-## Phase 3: Frontend Integration
-- [ ] Update App.jsx to use API calls instead of localStorage
-- [ ] Add API client with axios
-- [ ] Update all data fetching functions
-- [ ] Update all data saving functions
-- [ ] Handle API errors
-
-## Phase 4: Deployment
-- [ ] Update render.yaml for backend deployment
-- [ ] Configure PostgreSQL database on Render
-- [ ] Set up environment variables on Render
+## Phase 1: Complete Supabase Backend
+- [x] Update backend to use Supabase instead of PostgreSQL
+- [ ] Create Supabase project and get credentials
+- [ ] Test database connection
+- [ ] Initialize database tables in Supabase
+- [ ] Deploy backend with Supabase
 - [ ] Test API endpoints
-- [ ] Test cross-device sync
 
-## Phase 5: Testing
-- [ ] Test login functionality
-- [ ] Test case creation on desktop
-- [ ] Verify case appears on phone
-- [ ] Test all CRUD operations
-- [ ] Verify data persistence
+## Phase 2: Add Hospital Information to Regional Officer
+- [ ] Add Medway Maritime Hospital (259 members, Caroline Cameron)
+- [ ] Add Darent Valley Hospital (92 members, no reps)
+- [ ] Add Medirest Darent Valley (94 members, Patrick & Sarah)
+- [ ] Add Vets (80 members, Suzy Hudson-cooke)
+- [ ] Add SE6004 Buckinghamshire Health hospitals:
+  - [ ] Buckinghamshire Healthcare NHS Trust (109 members)
+  - [ ] Milton Keynes University Hospital (85 members, 4 reps)
+  - [ ] Ashford & St Peter's Hospital (40 members)
+  - [ ] Berkshire Healthcare NHS Foundation Trust (196 members)
+  - [ ] Frimley Health NHS Foundation Trust (148 members)
+  - [ ] Royal Berkshire NHS Foundation Trust (76 members)
+  - [ ] Royal Surrey NHS Foundation Trust (51 members)
+  - [ ] Surrey & Borders Partnership NHSFT (132 members)
+  - [ ] Surrey & Sussex Healthcare NHS Trust (16 members)
+  - [ ] The Queen Victoria Hospital NHS Foundation Trust (17 members)
+
+## Phase 3: Improve NHS Union Rep Hub (Mobile-Friendly)
+- [ ] Analyze current mobile layout issues
+- [ ] Create improved mobile-first responsive design
+- [ ] Better navigation for mobile users
+- [ ] Optimize search for mobile
+- [ ] Improve PDF viewer on mobile
+- [ ] Test on various screen sizes
+
+## Phase 4: Integration Options
+- [ ] Option A: Keep separate systems (Regional Officer + NHS Hub)
+- [ ] Option B: Combine into one unified system
+- [ ] Option C: Share authentication between systems
+- [ ] Option D: Cross-link between systems
+
+## Phase 5: Testing & Deployment
+- [ ] Test Supabase sync across devices
+- [ ] Test mobile responsiveness
+- [ ] Deploy all changes
+- [ ] Verify all functionality
+
+## Total Members: 1395
+## Total Hospitals: 14
