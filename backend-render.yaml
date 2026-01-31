@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: regional-officer-backend
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && node server.js
+    envVars:
+      - key: DATABASE_URL
+        value: postgresql://postgres:xehfi3-fodkod-Cerref@db.wnvypsxbtmypwurqrptu.supabase.co:5432/postgres
+      - key: SUPABASE_URL
+        value: https://wnvypsxbtmypwurqrptu.supabase.co
+      - key: SUPABASE_KEY
+        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indudnlwc3hidG15cHd1cnFycHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4NDEwMDcsImV4cCI6MjA4NTQxNzAwN30.mcrDuqozMmHGr2oWFbds9Ok5WExUoGfOzXe1fvsWUa8
+      - key: JWT_SECRET
+        value: nhsro2024-secret-key
+      - key: PORT
+        value: 3001
+      - key: NODE_ENV
+        value: production
